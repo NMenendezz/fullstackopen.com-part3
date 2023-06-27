@@ -59,22 +59,30 @@ const generateId = () => {
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
-  console.log(body.content);
+  
   if (!body.name || !body.number) {
     return response.status(400).json({
-      error: "content missing",
+      error: "name or number are missing.",
     });
   }
-
-  const person = {
+  
+  const newPerson = {
     name: body.name,
     number: body.number,
     id: generateId(),
   };
 
-  persons = persons.concat(person);
+  const notUnique = persons.find((person) => person.name === newPerson.name);
 
-  response.json(person);
+  if (notUnique) {
+    return response.status(400).json({
+      error: 'name must be unique.',
+    })
+  }
+
+  persons = persons.concat(newPerson);
+
+  response.json(newPerson);
 });
 
 app.delete("/api/persons/:id", (request, response) => {
