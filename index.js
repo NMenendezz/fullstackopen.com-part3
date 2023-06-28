@@ -1,4 +1,5 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
 app.use(express.json());
@@ -90,6 +91,10 @@ app.delete("/api/persons/:id", (request, response) => {
   persons = persons.filter((person) => person.id !== id);
   response.status(204).end();
 });
+
+app.use(
+  morgan(':method :url :status :res[content-length] - :response-time ms :data')
+)
 
 const PORT = 3001;
 app.listen(PORT, () => {
