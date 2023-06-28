@@ -1,8 +1,28 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require('cors')
 const app = express();
 
+const requestLogger = (request, response, next) => {
+  console.log("Method:", request.method);
+  console.log("Path:  ", request.path);
+  console.log("Body:  ", request.body);
+  console.log("---");
+  next();
+};
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
+app.use(express.static("build"));
+
+morgan.token("type", function (req, res) {
+  return JSON.stringify(req.body)
+});
 
 let persons = [
   {
@@ -58,15 +78,15 @@ const generateId = () => {
   return Math.floor(Math.random() * 10000);
 };
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
-  
+
   if (!body.name || !body.number) {
     return response.status(400).json({
       error: "name or number are missing.",
     });
   }
-  
+
   const newPerson = {
     name: body.name,
     number: body.number,
@@ -77,8 +97,8 @@ app.post("/api/persons", (request, response) => {
 
   if (notUnique) {
     return response.status(400).json({
-      error: 'name must be unique.',
-    })
+      error: "name must be unique.",
+    });
   }
 
   persons = persons.concat(newPerson);
@@ -92,11 +112,9 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms :data')
-)
+app.use(unknownEndpoint);
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
