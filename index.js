@@ -1,7 +1,10 @@
 const express = require("express");
 const morgan = require("morgan");
-const cors = require('cors')
+const cors = require("cors");
 const app = express();
+require("dotenv").config();
+
+const Person = require("./models/person");
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method);
@@ -21,7 +24,7 @@ app.use(requestLogger);
 app.use(express.static("build"));
 
 morgan.token("type", function (req, res) {
-  return JSON.stringify(req.body)
+  return JSON.stringify(req.body);
 });
 
 let persons = [
@@ -48,7 +51,9 @@ let persons = [
 ];
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/info", (request, response) => {
@@ -66,17 +71,10 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-  if (person) {
+  Person.findById(request.params.id).then((person) => {
     response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  });
 });
-const generateId = () => {
-  return Math.floor(Math.random() * 10000);
-};
 
 app.post("/api/persons", (request, response, next) => {
   const body = request.body;
@@ -87,11 +85,10 @@ app.post("/api/persons", (request, response, next) => {
     });
   }
 
-  const newPerson = {
+  const newPerson = new Person({
     name: body.name,
     number: body.number,
-    id: generateId(),
-  };
+  });
 
   const notUnique = persons.find((person) => person.name === newPerson.name);
 
@@ -101,9 +98,9 @@ app.post("/api/persons", (request, response, next) => {
     });
   }
 
-  persons = persons.concat(newPerson);
-
-  response.json(newPerson);
+  newPerson.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
