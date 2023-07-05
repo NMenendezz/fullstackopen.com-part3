@@ -7,7 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "node_modules/.bin/nodemon index.js"
+    "server": "node_modules/.bin/nodemon index.js",
+    "lint": "eslint ."
   },
   "author": "Nacho Menendez",
   "license": "MIT",
@@ -20,6 +21,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "eslint": "^8.44.0",
     "nodemon": "^2.0.22"
   }
 }
