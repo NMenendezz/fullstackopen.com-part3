@@ -37,27 +37,30 @@ morgan.token("type", function (req, res) {
   return JSON.stringify(req.body);
 });
 
-app.get("/api/persons", (request, response) => {
-  Person.find({}).then((persons) => {
-    response.json(persons);
-  });
+app.get("/api/persons", (request, response, next) => {
+  Person.find({})
+    .then((result) => {
+      response.json(result);
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
   const currentDate = new Date();
-  response.send(
-    `
-      <div>
-        <p>Phonebook has info for ${persons.length} people</p>
-      </div>
-      <div>
-        <p>${currentDate}</p>
-      </div>
-    `
-  );
+  Person.find({})
+    .then((result) => {
+      response.send(
+        `
+          <p>Phonebook has info for ${result.length} persons</p>
+          <br>
+          <p>${currentDate}</p>
+        `
+      );
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   Person.findById(request.params.id)
     .then((person) => {
       if (person) {
@@ -83,13 +86,16 @@ app.post("/api/persons", (request, response, next) => {
     number: body.number,
   });
 
-  newPerson.save()
-    .then(savedPerson => savedPerson.toJSON())
-    .then(savedAndFormattedPerson => {
-        console.log(`added ${newPerson.name} number ${newPerson.number} to phonebook`)
-        response.json(savedAndFormattedPerson)
-        })
-    .catch(error => next(error))
+  newPerson
+    .save()
+    .then((savedPerson) => savedPerson.toJSON())
+    .then((savedAndFormattedPerson) => {
+      console.log(
+        `added ${newPerson.name} number ${newPerson.number} to phonebook`
+      );
+      response.json(savedAndFormattedPerson);
+    })
+    .catch((error) => next(error));
 });
 
 app.delete("/api/persons/:id", (request, response, next) => {
@@ -108,7 +114,11 @@ app.put("/api/persons/:id", (request, response, next) => {
     number: body.number,
   };
 
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  Person.findByIdAndUpdate(request.params.id, person, {
+    new: true,
+    runValidators: true,
+    context: "query",
+  })
     .then((updatedPerson) => {
       response.json(updatedPerson);
     })

@@ -25,7 +25,7 @@ mongoose
     },
     number: {
       type: String,
-      minlength: 5,
+      minlength: 8,
       required: true
     }
   });
