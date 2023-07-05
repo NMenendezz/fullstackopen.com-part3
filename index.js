@@ -1,3 +1,6 @@
+/*eslint no-undef: "error"*/
+/*eslint-env node*/
+
 require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
@@ -130,7 +133,6 @@ app.put("/api/persons/:id", (request, response, next) => {
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
-// eslint-disable-next-line no-undef
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
